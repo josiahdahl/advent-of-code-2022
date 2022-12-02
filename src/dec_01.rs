@@ -1,6 +1,6 @@
+use super::utils;
 use std::fs;
 use std::path::Path;
-
 #[derive(Clone)]
 struct Elf {
     index: u8,
@@ -15,7 +15,7 @@ impl Elf {
 
 // Find the Elf carrying the most calories
 pub fn part_one() {
-    let contents = get_contents();
+    let contents = utils::get_input("dec_01");
     let mut lines = contents.lines();
     // 2. iterate over each group of line split by newlines and sum
     // 3. Store the index and sum as a max value
