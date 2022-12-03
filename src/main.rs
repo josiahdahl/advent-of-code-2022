@@ -15,6 +15,7 @@ fn main() {
         }
         "dec_02" => {
             dec_02::part_one();
+            dec_02::part_two();
         }
         _ => {
             println!("Please enter a valid date in the format dec_xx")
