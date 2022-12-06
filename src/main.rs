@@ -3,6 +3,7 @@ mod dec_01;
 mod dec_02;
 mod dec_03;
 mod dec_04;
+mod dec_05;
 mod utils;
 
 fn main() {
@@ -28,6 +29,10 @@ fn main() {
         "dec_04" => {
             dec_04::part_one(contents.lines());
             dec_04::part_two(contents.lines());
+        }
+        "dec_05" => {
+            dec_05::part_one(contents.lines());
+            dec_05::part_two(contents.lines());
         }
         _ => {
             println!("Please enter a valid date in the format dec_xx")
