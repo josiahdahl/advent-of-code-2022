@@ -13,6 +13,10 @@ impl Section {
     pub fn contains(self: &Self, section: &Section) -> bool {
         return self.start <= section.start && self.end >= section.end;
     }
+
+    pub fn overlaps(self: &Self, section: &Section) -> bool {
+        return self.start <= section.end && self.end >= section.start;
+    }
 }
 
 pub fn part_one(mut lines: Lines) {
@@ -36,4 +40,17 @@ fn section_from_string(section: &str) -> Section {
     let end: u32 = start_end.next().unwrap().parse().unwrap();
     return Section::new(start, end);
 }
-pub fn part_two(_lines: Lines) {}
+pub fn part_two(mut lines: Lines) {
+    let mut overlapping_sections = 0;
+    while let Some(line) = lines.next() {
+        let mut string_sections = line.split(",");
+        let section_one = section_from_string(string_sections.next().unwrap());
+        let section_two = section_from_string(string_sections.next().unwrap());
+
+        if section_one.overlaps(&section_two) || section_two.overlaps(&section_one) {
+            overlapping_sections += 1;
+        }
+    }
+
+    println!("Part Two: overlapping sections {overlapping_sections}");
+}
