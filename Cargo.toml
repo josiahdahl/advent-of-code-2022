@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 lazy_static = "1.4.0"
+petgraph = "0.6.2"
 regex = "1"
 
