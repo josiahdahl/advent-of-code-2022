@@ -29,7 +29,23 @@ impl fmt::Debug for FS {
     }
 }
 
-pub fn part_one(mut lines: Lines) {
+pub fn part_one(lines: Lines) {
+    let (g, root_node) = build_graph(lines);
+
+    let dir_sizes: HashMap<String, (usize, usize)> = dir_size(&g, root_node);
+    let mut sum_size = 0;
+    let max_size = 100_000;
+    for dir in dir_sizes.values() {
+        let size = dir.0 + dir.1;
+        if size <= max_size {
+            sum_size += size;
+        }
+    }
+
+    println!("Part One total size: {sum_size}");
+}
+
+fn build_graph(mut lines: Lines) -> (Graph<FS, ()>, NodeIndex) {
     // 0. Add the root node
     // 1. For every line...
     //  1. if the statement is `$ cd /` ignore, set current node to root node
@@ -117,34 +133,11 @@ pub fn part_one(mut lines: Lines) {
         // println!("Finished Processing {line}");
     }
 
-    // Now iterate through entire graph and find the size of all directories. Store them in a hash
-    // map and then pull out the ones that are less than 100_000 bytes
-    // let directories: HashMap<String, usize> = HashMap::new();
-
-    // let mut root_edges = g.edges_directed(root_node, Outgoing);
-    // // let mut dirs: Vec<NodeIndex> = Vec::new();
-    // let mut current_dir: NodeIndex;
-    // let mut current_size = 0;
-
-    let dir_sizes: HashMap<String, (usize, usize)> = dir_size(&g, root_node);
-    let mut sum_size = 0;
-    let max_size = 100_000;
-    for dir in dir_sizes.values() {
-        let size = dir.0 + dir.1;
-        if size <= max_size {
-            sum_size += size;
-        }
-    }
-
-    println!("Part One total size: {sum_size}");
+    return (g, root_node);
 }
 
 fn dir_size(g: &Graph<FS, ()>, dir: NodeIndex) -> HashMap<String, (usize, usize)> {
-    let parent_name = match g.node_weight(dir).unwrap() {
-        FS::Dir { name } => name,
-        FS::File { name, size: _ } => panic!("File {name} should not be passed to dir_size/2"),
-    };
-    return do_dir_size(g, dir, parent_name);
+    return do_dir_size(g, dir, &String::from(""));
 }
 
 fn do_dir_size(
@@ -156,7 +149,13 @@ fn do_dir_size(
         FS::Dir { name } => name,
         FS::File { name, size: _ } => panic!("File {name} should not be passed to dir_size/2"),
     };
-    let formatted_this_name = format!("{}-{}", parent_name, this_name);
+    let mut formatted_this_name = this_name.to_owned();
+    match &parent_name.to_owned()[..] {
+        "" => {}
+        _ => {
+            formatted_this_name = format!("{}-{}", parent_name, this_name);
+        }
+    };
     println!("In dir {this_name}");
     let mut file_children_size = 0;
     let mut total_children_size = 0;
@@ -181,9 +180,35 @@ fn do_dir_size(
     }
     println!("Dir: {this_name} File Children: {file_children_size}, Total Children: {total_children_size}");
     children.insert(
-        formatted_this_name,
+        formatted_this_name.to_owned(),
         (file_children_size, total_children_size),
     );
     return children;
 }
-pub fn part_two(_lines: Lines) {}
+pub fn part_two(lines: Lines) {
+    let (g, root_node) = build_graph(lines);
+
+    let dir_sizes: HashMap<String, (usize, usize)> = dir_size(&g, root_node);
+    let total_size = 70_000_000;
+    let min_free = 30_000_000;
+    let root_size = match dir_sizes.get("/") {
+        Some(val) => val.0 + val.1,
+        None => panic!("/ should exists..."),
+    };
+
+    let total_free = total_size - root_size;
+    let min_to_free = min_free - total_free;
+
+    let mut actual_to_free = std::usize::MAX;
+    let mut dir_name: &String = &String::new();
+
+    for (name, dir) in dir_sizes.iter() {
+        let size = dir.0 + dir.1;
+        if size > min_to_free && size <= actual_to_free {
+            actual_to_free = size;
+            dir_name = name;
+        }
+    }
+
+    println!("Part Two: Delete {dir_name} of size {actual_to_free}");
+}
